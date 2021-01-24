@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\MeasurementsRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -22,6 +24,16 @@ class Measurements
      */
     private $name;
 
+    /**
+     * @ORM\OneToMany(targetEntity=RecipeIngredients::class, mappedBy="measurement")
+     */
+    private $recipeIngredients;
+
+    public function __construct()
+    {
+        $this->recipeIngredients = new ArrayCollection();
+    }
+
     public function getId(): ?int
     {
         return $this->id;
@@ -35,6 +47,36 @@ class Measurements
     public function setName(string $name): self
     {
         $this->name = $name;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|RecipeIngredients[]
+     */
+    public function getRecipeIngredients(): Collection
+    {
+        return $this->recipeIngredients;
+    }
+
+    public function addRecipeIngredient(RecipeIngredients $recipeIngredient): self
+    {
+        if (!$this->recipeIngredients->contains($recipeIngredient)) {
+            $this->recipeIngredients[] = $recipeIngredient;
+            $recipeIngredient->setMeasurement($this);
+        }
+
+        return $this;
+    }
+
+    public function removeRecipeIngredient(RecipeIngredients $recipeIngredient): self
+    {
+        if ($this->recipeIngredients->removeElement($recipeIngredient)) {
+            // set the owning side to null (unless already changed)
+            if ($recipeIngredient->getMeasurement() === $this) {
+                $recipeIngredient->setMeasurement(null);
+            }
+        }
 
         return $this;
     }

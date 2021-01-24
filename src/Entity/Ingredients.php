@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\IngredientsRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -27,6 +29,16 @@ class Ingredients
      * @ORM\JoinColumn(nullable=false)
      */
     private $ingredientCategory;
+
+    /**
+     * @ORM\OneToMany(targetEntity=RecipeIngredients::class, mappedBy="ingredient")
+     */
+    private $recipeIngredients;
+
+    public function __construct()
+    {
+        $this->recipeIngredients = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -53,6 +65,36 @@ class Ingredients
     public function setIngredientCategory(?IngredientCategories $ingredientCategory): self
     {
         $this->ingredientCategory = $ingredientCategory;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|RecipeIngredients[]
+     */
+    public function getRecipeIngredients(): Collection
+    {
+        return $this->recipeIngredients;
+    }
+
+    public function addRecipeIngredient(RecipeIngredients $recipeIngredient): self
+    {
+        if (!$this->recipeIngredients->contains($recipeIngredient)) {
+            $this->recipeIngredients[] = $recipeIngredient;
+            $recipeIngredient->setIngredient($this);
+        }
+
+        return $this;
+    }
+
+    public function removeRecipeIngredient(RecipeIngredients $recipeIngredient): self
+    {
+        if ($this->recipeIngredients->removeElement($recipeIngredient)) {
+            // set the owning side to null (unless already changed)
+            if ($recipeIngredient->getIngredient() === $this) {
+                $recipeIngredient->setIngredient(null);
+            }
+        }
 
         return $this;
     }

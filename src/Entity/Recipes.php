@@ -44,9 +44,15 @@ class Recipes
      */
     private $recipeTags;
 
+    /**
+     * @ORM\OneToMany(targetEntity=RecipeIngredients::class, mappedBy="recipe")
+     */
+    private $recipeIngredients;
+
     public function __construct()
     {
         $this->recipeTags = new ArrayCollection();
+        $this->recipeIngredients = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -126,6 +132,36 @@ class Recipes
             // set the owning side to null (unless already changed)
             if ($recipeTag->getRecipe() === $this) {
                 $recipeTag->setRecipe(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|RecipeIngredients[]
+     */
+    public function getRecipeIngredients(): Collection
+    {
+        return $this->recipeIngredients;
+    }
+
+    public function addRecipeIngredient(RecipeIngredients $recipeIngredient): self
+    {
+        if (!$this->recipeIngredients->contains($recipeIngredient)) {
+            $this->recipeIngredients[] = $recipeIngredient;
+            $recipeIngredient->setRecipe($this);
+        }
+
+        return $this;
+    }
+
+    public function removeRecipeIngredient(RecipeIngredients $recipeIngredient): self
+    {
+        if ($this->recipeIngredients->removeElement($recipeIngredient)) {
+            // set the owning side to null (unless already changed)
+            if ($recipeIngredient->getRecipe() === $this) {
+                $recipeIngredient->setRecipe(null);
             }
         }
 

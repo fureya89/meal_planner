@@ -2,8 +2,10 @@
 
 namespace App\Controller;
 
+use App\Form\IngredientCategoryFormType;
 use App\Form\MeasurementFormType;
 use App\Form\TagFormType;
+use App\Service\RecipeIngredientCategoryService;
 use App\Service\RecipeMeasurementService;
 use App\Service\RecipeTagService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -96,4 +98,39 @@ class RecipeController extends AbstractController
             'form_tag' => $form->createView(),
         ]);
     }
+
+    /**
+     * @Route("/recipe/add/ingredient-category", name="recipe_add_ingredient_category")
+     * @param Request $request
+     * @param RecipeIngredientCategoryService $recipeIngredientCategoryService
+     * @return Response
+     */
+    public function addIngredientCategory(Request $request, RecipeIngredientCategoryService $recipeIngredientCategoryService): Response
+    {
+        $form = $this->createForm(IngredientCategoryFormType::class);
+
+        $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid()) {
+
+            $tagName = $form->get('name')->getData();
+            if($tagName) {
+                try {
+                    if($recipeIngredientCategoryService->addNewMeasurement($tagName)){
+                        $this->addFlash('success', 'Udało się dodać kategorię składnika');
+                    } else {
+                        $this->addFlash('error', 'Dana kategoria składnika już istnieje');
+                    }
+                } catch (\Exception $e) {
+                    $this->addFlash('error', 'Wystąpił nieoczekiwany błąd');
+                }
+            }
+            return $this->redirectToRoute('recipe');
+        }
+
+        return $this->render('recipe/add_ingredient_category.html.twig', [
+            'form_ingredient_category' => $form->createView(),
+        ]);
+    }
+
+
 }
